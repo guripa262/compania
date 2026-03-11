@@ -1378,10 +1378,10 @@ function log(msg) {
 // ================================================
 //  FIREBASE REST API
 // ================================================
-const FB = 'https://firestore.googleapis.com/v1/projects/gestion-compania/databases/(default)/documents/compania/datos';
+const FB = 'https://firestore.googleapis.com/v1/projects/gestion-compania/databases/(default)/documents/compania/datos?key=AIzaSyCNXQQOJvWDaWhKSuxzfcuFsvgbJo36shU';
 
 function save() {
-  fetch(FB + '?updateMask.fieldPaths=data', {
+  fetch(FB.replace('?key=', '?updateMask.fieldPaths=data&key='), {
     method: 'PATCH',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ fields:{ data:{ stringValue: JSON.stringify(state) } } })

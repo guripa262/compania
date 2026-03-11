@@ -1375,16 +1375,56 @@ function log(msg) {
   save();
 }
 
+// ================================================
+//  FIREBASE REST API
+// ================================================
+const FB = 'https://firestore.googleapis.com/v1/projects/gestion-compania/databases/(default)/documents/compania/datos';
+
 function save() {
-  try { localStorage.setItem('cia_data', JSON.stringify(state)); } catch(e) {}
+  fetch(FB + '?updateMask.fieldPaths=data', {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ fields:{ data:{ stringValue: JSON.stringify(state) } } })
+  }).catch(e => console.warn('Firebase save error:', e));
 }
 
-function load() {
+async function load() {
   try {
-    const d = localStorage.getItem('cia_data');
-    if (d) state = JSON.parse(d);
-  } catch(e) {}
+    const res = await fetch(FB);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.fields && json.fields.data && json.fields.data.stringValue) {
+        const parsed = JSON.parse(json.fields.data.stringValue);
+        state = Object.assign({personal:[],ausencias:[],vehiculos:[],material:[],ejercicios:[],cursos:[],actividad:[]}, parsed);
+        return true;
+      }
+    }
+  } catch(e) { console.warn('Firebase load error:', e); }
+  return false;
 }
+
+// Polling cada 20s para sincronizar cambios de otros usuarios
+setInterval(async () => {
+  try {
+    const res = await fetch(FB);
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json.fields || !json.fields.data) return;
+    const parsed = JSON.parse(json.fields.data.stringValue);
+    state = Object.assign({personal:[],ausencias:[],vehiculos:[],material:[],ejercicios:[],cursos:[],actividad:[]}, parsed);
+    updateHeader();
+    const v = document.querySelector('.view.active');
+    if (!v) return;
+    const id = v.id.replace('view-','');
+    if (id==='dashboard') renderDashboard();
+    else if (id==='personal') renderPersonal();
+    else if (id==='ausencias') renderAusencias();
+    else if (id==='ejercicios') renderEjercicios();
+    else if (id==='vehiculos') renderVehiculos();
+    else if (id==='material') renderMaterial();
+    else if (id==='cursos') renderCursos();
+  } catch(e) {}
+}, 20000);
 
 // ====================================================
 //  NAVEGACIÓN
@@ -2192,10 +2232,27 @@ function exportarCursos() {
 // ====================================================
 //  INIT
 // ====================================================
-load();
-cargarEjemplos();
-updateHeader();
-renderDashboard();
+(async function arrancar() {
+  document.getElementById('appLoader').style.display = 'flex';
+  const cargado = await load();
+  if (!cargado || state.personal.length === 0) {
+    cargarEjemplos();
+    save();
+  }
+  updateHeader();
+  renderDashboard();
+  document.getElementById('appLoader').style.display = 'none';
+})();
 </script>
+
+<div id="appLoader" style="display:none;position:fixed;inset:0;background:#0a0c08;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:20px">
+  <svg width="56" height="56" viewBox="0 0 48 52" style="animation:giro 1.2s ease-in-out infinite alternate">
+    <polygon points="24,2 27,18 44,18 30,28 35,45 24,35 13,45 18,28 4,18 21,18" fill="#d4a017" stroke="#f0c030" stroke-width="1"/>
+    <text x="24" y="31" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#0a0c08">L</text>
+  </svg>
+  <div style="font-family:'Oswald',sans-serif;letter-spacing:4px;color:#8bc34a;font-size:1rem;text-transform:uppercase">Cargando datos...</div>
+  <div style="font-family:'Courier Prime',monospace;font-size:0.7rem;color:#c8b89a;letter-spacing:2px">LA LEGIÓN · GESTIÓN DE COMPAÑÍA</div>
+</div>
+<style>@keyframes giro{0%{opacity:.5;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}</style>
 </body>
 </html>

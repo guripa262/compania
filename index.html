@@ -1375,66 +1375,16 @@ function log(msg) {
   save();
 }
 
-// ====================================================
-//  FIREBASE REST API (sin SDK, sin módulos)
-// ====================================================
-const FB_URL = 'https://firestore.googleapis.com/v1/projects/gestion-compania/databases/(default)/documents/compania/datos';
-
 function save() {
-  const body = JSON.stringify({
-    fields: { data: { stringValue: JSON.stringify(state) } }
-  });
-  fetch(FB_URL + '?updateMask.fieldPaths=data', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: body
-  }).catch(e => console.error('Error guardando:', e));
+  try { localStorage.setItem('cia_data', JSON.stringify(state)); } catch(e) {}
 }
 
-async function load() {
+function load() {
   try {
-    const res = await fetch(FB_URL);
-    if (res.ok) {
-      const json = await res.json();
-      if (json.fields && json.fields.data) {
-        const parsed = JSON.parse(json.fields.data.stringValue);
-        state = Object.assign({ personal:[], ausencias:[], vehiculos:[], material:[], ejercicios:[], cursos:[], actividad:[] }, parsed);
-      }
-    }
-  } catch(e) {
-    console.warn('Firebase no disponible, usando datos locales:', e);
-    try {
-      const d = localStorage.getItem('cia_data');
-      if (d) state = JSON.parse(d);
-    } catch(e2) {}
-  }
-}
-
-// Sincronización cada 30 segundos
-setInterval(async () => {
-  try {
-    const res = await fetch(FB_URL);
-    if (res.ok) {
-      const json = await res.json();
-      if (json.fields && json.fields.data) {
-        const parsed = JSON.parse(json.fields.data.stringValue);
-        state = Object.assign({ personal:[], ausencias:[], vehiculos:[], material:[], ejercicios:[], cursos:[], actividad:[] }, parsed);
-        updateHeader();
-        const active = document.querySelector('.view.active');
-        if (active) {
-          const id = active.id.replace('view-', '');
-          if (id === 'dashboard') renderDashboard();
-          else if (id === 'personal') renderPersonal();
-          else if (id === 'ausencias') renderAusencias();
-          else if (id === 'ejercicios') renderEjercicios();
-          else if (id === 'vehiculos') renderVehiculos();
-          else if (id === 'material') renderMaterial();
-          else if (id === 'cursos') renderCursos();
-        }
-      }
-    }
+    const d = localStorage.getItem('cia_data');
+    if (d) state = JSON.parse(d);
   } catch(e) {}
-}, 30000);
+}
 
 // ====================================================
 //  NAVEGACIÓN
@@ -2242,36 +2192,10 @@ function exportarCursos() {
 // ====================================================
 //  INIT
 // ====================================================
-(async () => {
-  // Mostrar pantalla de carga
-  document.getElementById('appLoader').style.display = 'flex';
-  
-  await load();
-  
-  if (state.personal.length === 0) {
-    cargarEjemplos();
-    save();
-  }
-  
-  updateHeader();
-  renderDashboard();
-  
-  // Ocultar pantalla de carga
-  document.getElementById('appLoader').style.display = 'none';
-})();
+load();
+cargarEjemplos();
+updateHeader();
+renderDashboard();
 </script>
-
-<!-- PANTALLA DE CARGA -->
-<div id="appLoader" style="display:flex;position:fixed;inset:0;background:rgba(10,12,8,0.97);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:20px">
-  <svg width="56" height="60" viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:pulse2 1.5s ease-in-out infinite">
-    <polygon points="24,2 27,18 44,18 30,28 35,45 24,35 13,45 18,28 4,18 21,18" fill="#d4a017" stroke="#f0c030" stroke-width="1"/>
-    <text x="24" y="31" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#0a0c08">L</text>
-  </svg>
-  <div style="font-family:'Oswald',sans-serif;letter-spacing:4px;color:#8bc34a;font-size:1rem;text-transform:uppercase">Conectando...</div>
-  <div style="font-family:'Courier Prime',monospace;font-size:0.7rem;color:#c8b89a;letter-spacing:2px">LA LEGIÓN · GESTIÓN DE COMPAÑÍA</div>
-</div>
-<style>
-@keyframes pulse2 { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.95)} }
-</style>
 </body>
 </html>

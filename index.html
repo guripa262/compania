@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GESTIÓN DE COMPAÑÍA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;600&family=Courier+Prime:wght@400;700&display=swap');
+
+  :root {
+    --verde: #2d4a1e;
+    --verde-med: #3d6b28;
+    --verde-claro: #5a9e38;
+    --verde-luz: #8bc34a;
+    --beis: #c8b89a;
+    --beis-claro: #e8dcc8;
+    --arena: #f0e8d8;
+    --negro: #0a0c08;
+    --gris-oscuro: #1a1e15;
+    --gris-med: #2e3528;
+    --gris-claro: #4a5240;
+    --rojo: #c0392b;
+    --rojo-claro: #e74c3c;
+    --amarillo: #d4a017;
+    --amarillo-claro: #f0c030;
+    --azul: #1a4a6e;
+    --blanco: #f5f0e8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--negro);
+    color: var(--blanco);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--gris-oscuro);
+    border-bottom: 3px solid var(--verde-claro);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .header-emblem {
+    background: var(--verde);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-right: 2px solid var(--verde-claro);
+  }
+
+  .emblem-icon {
+    font-size: 28px;
+    filter: drop-shadow(0 0 8px rgba(90,158,56,0.5));
+  }
+
+  .header-title {
+    padding: 14px 24px;
+    flex: 1;
+  }
+
+  .header-title h1 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--verde-luz);
+    text-transform: uppercase;
+  }
+
+  .header-title p {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.7rem;
+    color: var(--beis);
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 0;
+    border-left: 2px solid var(--gris-med);
+  }
+
+  .hstat {
+    padding: 10px 20px;
+    text-align: center;
+    border-right: 1px solid var(--gris-med);
+  }
+
+  .hstat-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--verde-luz);
+  }
+
+  .hstat-num.alerta { color: var(--rojo-claro); }
+  .hstat-num.aviso { color: var(--amarillo-claro); }
+
+  .hstat-label {
+    font-size: 0.6rem;
+    color: var(--beis);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* NAV */
+  .nav {
+    background: var(--gris-med);
+    display: flex;
+    border-bottom: 2px solid var(--verde);
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: var(--beis);
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid var(--gris-claro);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-btn:hover { background: var(--verde); color: var(--blanco); }
+  .nav-btn.active {
+    background: var(--verde-claro);
+    color: var(--negro);
+    font-weight: 600;
+    border-bottom: 3px solid var(--verde-luz);
+  }
+
+  /* MAIN */
+  .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--verde);
+  }
+
+  .section-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--verde-luz);
+  }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-med);
+    border-left: 4px solid var(--verde-claro);
+    padding: 20px;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .card:hover { border-left-color: var(--verde-luz); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
+  .card-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--beis);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--verde-luz);
+    line-height: 1;
+  }
+
+  .card-sub { font-size: 0.8rem; color: var(--beis); margin-top: 6px; }
+  .card.rojo { border-left-color: var(--rojo-claro); }
+  .card.rojo .card-value { color: var(--rojo-claro); }
+  .card.amarillo { border-left-color: var(--amarillo-claro); }
+  .card.amarillo .card-value { color: var(--amarillo-claro); }
+
+  /* TABLE */
+  .table-container {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-med);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .table-toolbar {
+    padding: 14px 20px;
+    background: var(--gris-med);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--gris-claro);
+  }
+
+  .table-toolbar span {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    color: var(--beis);
+    text-transform: uppercase;
+    margin-right: 8px;
+  }
+
+  input[type="text"], select {
+    background: var(--negro);
+    border: 1px solid var(--gris-claro);
+    color: var(--blanco);
+    padding: 8px 12px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.85rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border 0.2s;
+  }
+
+  input[type="text"]:focus, select:focus { border-color: var(--verde-claro); }
+  select option { background: var(--negro); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  thead { background: var(--verde); }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--beis-claro);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  th:hover { background: var(--verde-med); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--gris-med);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: rgba(90,158,56,0.08); }
+
+  td {
+    padding: 11px 16px;
+    color: var(--blanco);
+    vertical-align: middle;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 2px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .badge-verde { background: rgba(90,158,56,0.2); color: var(--verde-luz); border: 1px solid var(--verde-claro); }
+  .badge-rojo { background: rgba(192,57,43,0.2); color: var(--rojo-claro); border: 1px solid var(--rojo); }
+  .badge-amarillo { background: rgba(212,160,23,0.2); color: var(--amarillo-claro); border: 1px solid var(--amarillo); }
+  .badge-gris { background: rgba(74,82,64,0.4); color: var(--beis); border: 1px solid var(--gris-claro); }
+  .badge-azul { background: rgba(26,74,110,0.3); color: #64b5f6; border: 1px solid var(--azul); }
+
+  /* BUTTONS */
+  .btn {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary { background: var(--verde-claro); color: var(--negro); }
+  .btn-primary:hover { background: var(--verde-luz); }
+  .btn-secondary { background: transparent; color: var(--beis); border: 1px solid var(--gris-claro); }
+  .btn-secondary:hover { border-color: var(--verde-claro); color: var(--verde-luz); }
+  .btn-danger { background: transparent; color: var(--rojo-claro); border: 1px solid var(--rojo); }
+  .btn-danger:hover { background: var(--rojo); color: var(--blanco); }
+  .btn-sm { padding: 5px 10px; font-size: 0.7rem; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--verde);
+    border-top: 3px solid var(--verde-claro);
+    padding: 28px;
+    width: 90%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 2px;
+  }
+
+  .modal-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    color: var(--verde-luz);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gris-med);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .form-row.full { grid-template-columns: 1fr; }
+
+  .form-group label {
+    display: block;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--beis);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .form-group input, .form-group select {
+    width: 100%;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gris-med);
+  }
+
+  /* SECCIONES OVERVIEW */
+  .seccion-blocks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .seccion-block {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-med);
+    border-top: 4px solid var(--verde-claro);
+    padding: 20px;
+    border-radius: 2px;
+  }
+
+  .seccion-block h3 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: var(--verde-luz);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .seccion-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--gris-med);
+    font-size: 0.83rem;
+  }
+
+  .seccion-stat:last-child { border-bottom: none; }
+  .seccion-stat .label { color: var(--beis); }
+  .seccion-stat .value { font-family: 'Oswald', sans-serif; font-weight: 600; color: var(--blanco); }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 6px;
+    background: var(--gris-med);
+    border-radius: 3px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--verde-claro), var(--verde-luz));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-fill.rojo { background: linear-gradient(90deg, var(--rojo), var(--rojo-claro)); }
+  .progress-fill.amarillo { background: linear-gradient(90deg, var(--amarillo), var(--amarillo-claro)); }
+
+  /* DASHBOARD */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+  }
+
+  .panel {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-med);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: var(--gris-med);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gris-claro);
+  }
+
+  .panel-header h3 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    color: var(--beis);
+    text-transform: uppercase;
+  }
+
+  .panel-body { padding: 16px 20px; }
+
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gris-med);
+    font-size: 0.82rem;
+  }
+
+  .alert-item:last-child { border-bottom: none; }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-rojo { background: var(--rojo-claro); box-shadow: 0 0 6px var(--rojo-claro); }
+  .dot-amarillo { background: var(--amarillo-claro); box-shadow: 0 0 6px var(--amarillo-claro); }
+  .dot-verde { background: var(--verde-luz); }
+
+  .timeline-item {
+    display: flex;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gris-med);
+    font-size: 0.82rem;
+  }
+
+  .timeline-date {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.72rem;
+    color: var(--beis);
+    min-width: 60px;
+    margin-top: 2px;
+  }
+
+  /* EJERCICIO BUILDER */
+  .ejercicio-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-med);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 2px;
+  }
+
+  /* VEHICULOS */
+  .vehiculo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .vehiculo-card {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-med);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .vehiculo-header {
+    padding: 14px 16px;
+    background: var(--gris-med);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .vehiculo-id {
+    font-family: 'Courier Prime', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--blanco);
+    letter-spacing: 2px;
+  }
+
+  .vehiculo-body { padding: 14px 16px; }
+
+  .vehiculo-stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--gris-med);
+  }
+
+  .vehiculo-stat .k { color: var(--beis); }
+  .vehiculo-stat .v { font-weight: 600; }
+
+  /* TOOLTIP */
+  .tooltip {
+    position: relative;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--beis);
+  }
+
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* RESPONSIVE FIXES */
+  @media (max-width: 768px) {
+    .seccion-blocks { grid-template-columns: 1fr; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .header-stats { display: none; }
+  }
+
+  /* PRINT */
+  @media print {
+    .nav, .header, .btn, .table-toolbar .btn { display: none !important; }
+    body { background: white; color: black; }
+    table { font-size: 11px; }
+    th { background: #333 !important; color: white !important; }
+  }
+
+  /* PULSE ANIMATION */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--verde-luz);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-emblem">
+      <svg width="48" height="52" viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px rgba(212,160,23,0.6))">
+        <!-- Cruz de Santiago / espada legionaria -->
+        <polygon points="24,2 27,18 44,18 30,28 35,45 24,35 13,45 18,28 4,18 21,18" fill="#d4a017" stroke="#f0c030" stroke-width="1"/>
+        <!-- Letra L central -->
+        <text x="24" y="31" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#0a0c08">L</text>
+        <!-- Base decorativa -->
+        <rect x="8" y="47" width="32" height="3" rx="1" fill="#d4a017" opacity="0.7"/>
+      </svg>
+      <div>
+        <div style="font-family:'Oswald',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:3px;color:var(--amarillo-claro);text-transform:uppercase;line-height:1.2">La Legión</div>
+        <div style="font-family:'Courier Prime',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--beis);text-transform:uppercase;margin-top:2px">Tercio · Bandera</div>
+      </div>
+    </div>
+    <div class="header-title">
+      <h1>Compañía — Mando</h1>
+      <p><span class="live-dot"></span>CONTROL OPERATIVO · 3 SECCIONES · TIEMPO REAL</p>
+    </div>
+    <div class="header-stats" id="headerStats">
+      <div class="hstat">
+        <div class="hstat-num" id="hTotal">0</div>
+        <div class="hstat-label">Personal</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-num" id="hDisponibles">0</div>
+        <div class="hstat-label">Presentes</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-num alerta" id="hAusentes">0</div>
+        <div class="hstat-label">Ausentes</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-num aviso" id="hVehOp">0</div>
+        <div class="hstat-label">Veh. Oper.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" onclick="showView('dashboard')">📊 Dashboard</button>
+  <button class="nav-btn" onclick="showView('personal')">👥 Personal</button>
+  <button class="nav-btn" onclick="showView('ausencias')">📅 Control de Días</button>
+  <button class="nav-btn" onclick="showView('ejercicios')">🎯 Ejercicios</button>
+  <button class="nav-btn" onclick="showView('vehiculos')">🚗 Vehículos</button>
+  <button class="nav-btn" onclick="showView('material')">📦 Material</button>
+  <button class="nav-btn" onclick="showView('cursos')">🎓 Cursos</button>
+</div>
+
+<div class="main">
+
+<!-- ==================== DASHBOARD ==================== -->
+<div id="view-dashboard" class="view active">
+  <div class="section-header">
+    <div class="section-title">📊 Situación General</div>
+    <div style="font-family:'Courier Prime',monospace;font-size:0.8rem;color:var(--beis)" id="fechaHoy"></div>
+  </div>
+
+  <div class="cards-grid" id="dashCards">
+    <!-- generadas por JS -->
+  </div>
+
+  <div class="seccion-blocks" id="seccionBlocks">
+    <!-- generadas por JS -->
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <h3>⚡ Alertas Activas</h3>
+        <span class="badge badge-rojo" id="alertCount">0</span>
+      </div>
+      <div class="panel-body" id="alertasPanel">
+        <div class="empty-state"><div class="icon">✅</div><p>Sin alertas activas</p></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><h3>📋 Últimos Movimientos</h3></div>
+      <div class="panel-body" id="actividadPanel">
+        <div class="empty-state"><div class="icon">📋</div><p>Sin actividad reciente</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PERSONAL ==================== -->
+<div id="view-personal" class="view">
+  <div class="section-header">
+    <div class="section-title">👥 Personal</div>
+    <button class="btn btn-primary" onclick="openModal('modalPersonal')">+ Añadir Efectivo</button>
+  </div>
+
+  <div class="table-container">
+    <div class="table-toolbar">
+      <span>Filtros:</span>
+      <input type="text" placeholder="Buscar nombre, NIP..." id="searchPersonal" oninput="renderPersonal()" style="min-width:180px">
+      <select id="filterSeccion" onchange="renderPersonal()">
+        <option value="">Todas las secciones</option>
+        <option value="1ª Sección">1ª Sección</option>
+        <option value="2ª Sección">2ª Sección</option>
+        <option value="Sección de Armas">Sección de Armas</option>
+        <option value="Mando/Plana">Mando/Plana</option>
+      </select>
+      <select id="filterEmpleo" onchange="renderPersonal()">
+        <option value="">Todos los empleos</option>
+        <option value="TTE">Teniente</option>
+        <option value="SGTO">Sargento</option>
+        <option value="SGTO1">Sargento 1º</option>
+        <option value="CABO1">Cabo 1º</option>
+        <option value="CABO">Cabo</option>
+        <option value="SOLD">Soldado</option>
+      </select>
+      <select id="filterEstado" onchange="renderPersonal()">
+        <option value="">Todos los estados</option>
+        <option value="Presente">Presente</option>
+        <option value="Permiso oficial">Permiso oficial</option>
+        <option value="Paternidad">Paternidad</option>
+        <option value="Lactancia">Lactancia</option>
+        <option value="Baja">Baja</option>
+        <option value="Rebajado">Rebajado</option>
+        <option value="Guardia">Guardia</option>
+        <option value="Comisión">Comisión</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="exportarListado()">📄 Exportar</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>NIP</th>
+          <th>Empleo</th>
+          <th>Nombre</th>
+          <th>Sección</th>
+          <th>Especialidad</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaPersonal"></tbody>
+    </table>
+  </div>
+  <div style="font-family:'Courier Prime',monospace;font-size:0.75rem;color:var(--beis);text-align:right" id="countPersonal"></div>
+</div>
+
+<!-- ==================== AUSENCIAS ==================== -->
+<div id="view-ausencias" class="view">
+  <div class="section-header">
+    <div class="section-title">📅 Control de Días</div>
+    <button class="btn btn-primary" onclick="openModal('modalAusencia')">+ Registrar Ausencia</button>
+  </div>
+
+  <div class="cards-grid" id="ausenciaCards"></div>
+
+  <div class="table-container">
+    <div class="table-toolbar">
+      <span>Filtros:</span>
+      <select id="filterTipoAus" onchange="renderAusencias()">
+        <option value="">Todos los tipos</option>
+        <option value="Permiso oficial">Permiso oficial</option>
+        <option value="Paternidad">Paternidad</option>
+        <option value="Lactancia">Lactancia</option>
+        <option value="Baja">Baja</option>
+        <option value="Rebajado">Rebajado</option>
+        <option value="Guardia">Guardia</option>
+        <option value="Comisión de servicio">Comisión de servicio</option>
+      </select>
+      <select id="filterSecAus" onchange="renderAusencias()">
+        <option value="">Todas las secciones</option>
+        <option value="1ª Sección">1ª Sección</option>
+        <option value="2ª Sección">2ª Sección</option>
+        <option value="Sección de Armas">Sección de Armas</option>
+        <option value="Mando/Plana">Mando/Plana</option>
+      </select>
+      <input type="date" id="filterFechaAus" onchange="renderAusencias()" style="background:var(--negro);border:1px solid var(--gris-claro);color:var(--blanco);padding:8px;border-radius:2px;">
+      <button class="btn btn-secondary btn-sm" onclick="exportarAusencias()">📄 Exportar</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Personal</th>
+          <th>Sección</th>
+          <th>Tipo</th>
+          <th>Fecha Inicio</th>
+          <th>Fecha Fin</th>
+          <th>Días</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaAusencias"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== EJERCICIOS ==================== -->
+<div id="view-ejercicios" class="view">
+  <div class="section-header">
+    <div class="section-title">🎯 Generador de Listados</div>
+    <button class="btn btn-primary" onclick="openModal('modalEjercicio')">+ Nuevo Ejercicio</button>
+  </div>
+
+  <div style="background:var(--gris-oscuro);border:1px solid var(--gris-med);padding:20px;margin-bottom:24px;border-radius:2px;">
+    <div style="font-family:'Oswald',sans-serif;font-size:0.8rem;letter-spacing:2px;color:var(--beis);text-transform:uppercase;margin-bottom:16px;">⚙️ Generador de Listado por Criterios</div>
+    <div class="ejercicio-filters">
+      <div class="form-group">
+        <label>Sección</label>
+        <select id="ejSeccion">
+          <option value="">Todas</option>
+          <option value="1ª Sección">1ª Sección</option>
+          <option value="2ª Sección">2ª Sección</option>
+          <option value="Sección de Armas">Sección de Armas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Estado personal</label>
+        <select id="ejEstado">
+          <option value="Presente">Solo presentes</option>
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Empleo mínimo</label>
+        <select id="ejEmpleo">
+          <option value="">Todos</option>
+          <option value="CABO">Cabo o superior</option>
+          <option value="SGTO">Suboficial o superior</option>
+          <option value="TTE">Oficial</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="generarListadoEjercicio()">⚡ Generar Listado</button>
+    <button class="btn btn-secondary" style="margin-left:10px" onclick="exportarEjercicio()">📄 Exportar a Excel</button>
+  </div>
+
+  <div id="ejercicioResultado"></div>
+
+  <div class="table-container">
+    <div class="table-toolbar"><span>📋 Ejercicios Registrados</span></div>
+    <table>
+      <thead>
+        <tr><th>Nombre</th><th>Fecha</th><th>Tipo</th><th>Efectivos asignados</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="tablaEjercicios"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== VEHICULOS ==================== -->
+<div id="view-vehiculos" class="view">
+  <div class="section-header">
+    <div class="section-title">🚗 Vehículos</div>
+    <button class="btn btn-primary" onclick="openModal('modalVehiculo')">+ Añadir Vehículo</button>
+  </div>
+
+  <div class="cards-grid" id="vehiculoCards"></div>
+
+  <div class="vehiculo-grid" id="vehiculoGrid"></div>
+</div>
+
+<!-- ==================== MATERIAL ==================== -->
+<div id="view-material" class="view">
+  <div class="section-header">
+    <div class="section-title">📦 Material</div>
+    <button class="btn btn-primary" onclick="openModal('modalMaterial')">+ Añadir Material</button>
+  </div>
+
+  <div class="table-container">
+    <div class="table-toolbar">
+      <span>Filtros:</span>
+      <select id="filterCatMat" onchange="renderMaterial()">
+        <option value="">Todas las categorías</option>
+        <option value="Armamento">Armamento</option>
+        <option value="Transmisiones">Transmisiones</option>
+        <option value="NBC">NBC</option>
+        <option value="Sanidad">Sanidad</option>
+        <option value="Intendencia">Intendencia</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <select id="filterSecMat" onchange="renderMaterial()">
+        <option value="">Todas las secciones</option>
+        <option value="1ª Sección">1ª Sección</option>
+        <option value="2ª Sección">2ª Sección</option>
+        <option value="Sección de Armas">Sección de Armas</option>
+        <option value="Mando/Plana">Mando/Plana</option>
+      </select>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Denominación</th><th>Categoría</th><th>Sección</th><th>Total</th><th>Operativo</th><th>En reparación</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="tablaMaterial"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== CURSOS ==================== -->
+<div id="view-cursos" class="view">
+  <div class="section-header">
+    <div class="section-title">🎓 Cursos y Capacitaciones</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="toggleCursosVista()" id="btnVistaCursos">👤 Ver por persona</button>
+      <button class="btn btn-primary" onclick="openModalCurso()">+ Añadir Curso</button>
+    </div>
+  </div>
+
+  <!-- Vista tabla normal -->
+  <div id="cursosVistaTabla">
+    <div class="table-container">
+      <div class="table-toolbar">
+        <span>Filtros:</span>
+        <input type="text" placeholder="Buscar persona o curso..." id="searchCurso" oninput="renderCursos()" style="min-width:200px">
+        <select id="filterSecCurso" onchange="renderCursos()">
+          <option value="">Todas las secciones</option>
+          <option value="1ª Sección">1ª Sección</option>
+          <option value="2ª Sección">2ª Sección</option>
+          <option value="Sección de Armas">Sección de Armas</option>
+          <option value="Mando/Plana">Mando/Plana</option>
+        </select>
+        <select id="filterCatCurso" onchange="renderCursos()">
+          <option value="">Todas las categorías</option>
+          <option value="Combate">Combate</option>
+          <option value="Tiro">Tiro</option>
+          <option value="Transmisiones">Transmisiones</option>
+          <option value="Sanidad">Sanidad</option>
+          <option value="Liderazgo">Liderazgo</option>
+          <option value="Conducción">Conducción</option>
+          <option value="Idiomas">Idiomas</option>
+          <option value="Otro">Otro</option>
+        </select>
+        <select id="filterEstCurso" onchange="renderCursos()">
+          <option value="">Todos los estados</option>
+          <option value="Aprobado">Aprobado</option>
+          <option value="En curso (curso)">En curso</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="exportarCursos()">📄 Exportar</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Personal</th>
+            <th>Sección</th>
+            <th>Curso / Capacitación</th>
+            <th>Categoría</th>
+            <th>Fecha</th>
+            <th>Centro</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaCursos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Vista ficha por persona -->
+  <div id="cursosVistaPersona" style="display:none">
+    <div class="table-toolbar" style="background:var(--gris-med);border:1px solid var(--gris-claro);border-radius:2px;margin-bottom:16px;padding:14px 20px">
+      <span>Efectivo:</span>
+      <select id="selectPersonaCurso" onchange="renderFichaCursos()" style="min-width:260px">
+        <option value="">— Selecciona un efectivo —</option>
+      </select>
+    </div>
+    <div id="fichaCursosPersona"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL PERSONAL -->
+<div class="modal-overlay" id="modalPersonal">
+  <div class="modal">
+    <div class="modal-title">👤 Añadir / Editar Efectivo</div>
+    <input type="hidden" id="pId">
+    <div class="form-row">
+      <div class="form-group"><label>NIP</label><input type="text" id="pNip" placeholder="12345678A"></div>
+      <div class="form-group"><label>Empleo</label>
+        <select id="pEmpleo">
+          <option value="TTE">Teniente</option>
+          <option value="SGTO1">Sargento 1º</option>
+          <option value="SGTO">Sargento</option>
+          <option value="CABO1">Cabo 1º</option>
+          <option value="CABO">Cabo</option>
+          <option value="SOLD">Soldado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Apellidos</label><input type="text" id="pApellidos" placeholder="García López"></div>
+      <div class="form-group"><label>Nombre</label><input type="text" id="pNombre" placeholder="Juan"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sección</label>
+        <select id="pSeccion">
+          <option value="Mando/Plana">Mando/Plana</option>
+          <option value="1ª Sección">1ª Sección</option>
+          <option value="2ª Sección">2ª Sección</option>
+          <option value="Sección de Armas">Sección de Armas</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Especialidad</label>
+        <select id="pEspecialidad">
+          <option value="Inf.">Infantería</option>
+          <option value="Trans.">Transmisiones</option>
+          <option value="San.">Sanidad</option>
+          <option value="Mec.">Mecánico</option>
+          <option value="Cond.">Conductor</option>
+          <option value="NBC">NBC</option>
+          <option value="Tiradora">Tiradora</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Estado Actual</label>
+        <select id="pEstado">
+          <option value="Presente">Presente</option>
+          <option value="Permiso oficial">Permiso oficial</option>
+          <option value="Paternidad">Paternidad</option>
+          <option value="Lactancia">Lactancia</option>
+          <option value="Baja">Baja</option>
+          <option value="Rebajado">Rebajado</option>
+          <option value="Guardia">Guardia</option>
+          <option value="Comisión">Comisión</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Observaciones</label><input type="text" id="pObs" placeholder="Opcional..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalPersonal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPersonal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AUSENCIA -->
+<div class="modal-overlay" id="modalAusencia">
+  <div class="modal">
+    <div class="modal-title">📅 Registrar Ausencia</div>
+    <input type="hidden" id="aId">
+    <div class="form-row full">
+      <div class="form-group"><label>Personal</label>
+        <select id="aPersonal"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Tipo de ausencia</label>
+        <select id="aTipo">
+          <option value="Permiso oficial">Permiso oficial</option>
+          <option value="Paternidad">Paternidad</option>
+          <option value="Lactancia">Lactancia</option>
+          <option value="Baja">Baja</option>
+          <option value="Rebajado">Rebajado</option>
+          <option value="Guardia">Guardia</option>
+          <option value="Comisión de servicio">Comisión de servicio</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Estado resultante</label>
+        <select id="aEstadoRes">
+          <option value="Permiso oficial">Permiso oficial</option>
+          <option value="Paternidad">Paternidad</option>
+          <option value="Lactancia">Lactancia</option>
+          <option value="Baja">Baja</option>
+          <option value="Rebajado">Rebajado</option>
+          <option value="Guardia">Guardia</option>
+          <option value="Comisión">Comisión</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha Inicio</label><input type="date" id="aInicio"></div>
+      <div class="form-group"><label>Fecha Fin</label><input type="date" id="aFin"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label>Observaciones</label><input type="text" id="aObs" placeholder="Motivo, detalles..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalAusencia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarAusencia()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EJERCICIO -->
+<div class="modal-overlay" id="modalEjercicio">
+  <div class="modal">
+    <div class="modal-title">🎯 Registrar Ejercicio</div>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre del Ejercicio</label><input type="text" id="eNombre" placeholder="Ej: Instrucción tiro..."></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="eTipo">
+          <option>Instrucción</option>
+          <option>Tiro</option>
+          <option>Maniobras</option>
+          <option>Guardia</option>
+          <option>Actividad física</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha</label><input type="date" id="eFecha"></div>
+      <div class="form-group"><label>Estado</label>
+        <select id="eEstado">
+          <option value="Planificado">Planificado</option>
+          <option value="En curso">En curso</option>
+          <option value="Completado">Completado</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalEjercicio')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEjercicio()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VEHICULO -->
+<div class="modal-overlay" id="modalVehiculo">
+  <div class="modal">
+    <div class="modal-title">🚗 Añadir / Editar Vehículo</div>
+    <input type="hidden" id="vId">
+    <div class="form-row">
+      <div class="form-group"><label>Matrícula / Nº Táctico</label><input type="text" id="vMatricula" placeholder="ET-12345"></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="vTipo">
+          <option>RG-31</option>
+          <option>URO VAMTAC</option>
+          <option>TOA M-113</option>
+          <option>BMR</option>
+          <option>LMV</option>
+          <option>Camión</option>
+          <option>Todoterreno</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sección Asignada</label>
+        <select id="vSeccion">
+          <option value="Mando/Plana">Mando/Plana</option>
+          <option value="1ª Sección">1ª Sección</option>
+          <option value="2ª Sección">2ª Sección</option>
+          <option value="Sección de Armas">Sección de Armas</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Estado Operativo</label>
+        <select id="vEstado">
+          <option value="Operativo">Operativo</option>
+          <option value="En mantenimiento">En mantenimiento</option>
+          <option value="Avería">Avería</option>
+          <option value="No operativo">No operativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Última Revisión</label><input type="date" id="vRevision"></div>
+      <div class="form-group"><label>Próxima ITV</label><input type="date" id="vItv"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label>Observaciones / Averías</label><input type="text" id="vObs" placeholder="Detalles de estado..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalVehiculo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarVehiculo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MATERIAL -->
+<div class="modal-overlay" id="modalMaterial">
+  <div class="modal">
+    <div class="modal-title">📦 Añadir Material</div>
+    <input type="hidden" id="mId">
+    <div class="form-row">
+      <div class="form-group"><label>Denominación</label><input type="text" id="mNombre" placeholder="Fusil HK G36..."></div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="mCategoria">
+          <option>Armamento</option>
+          <option>Transmisiones</option>
+          <option>NBC</option>
+          <option>Sanidad</option>
+          <option>Intendencia</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sección</label>
+        <select id="mSeccion">
+          <option value="Mando/Plana">Mando/Plana</option>
+          <option value="1ª Sección">1ª Sección</option>
+          <option value="2ª Sección">2ª Sección</option>
+          <option value="Sección de Armas">Sección de Armas</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Estado</label>
+        <select id="mEstado">
+          <option value="Operativo">Operativo</option>
+          <option value="Parcial">Parcial</option>
+          <option value="No operativo">No operativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Cantidad Total</label><input type="text" id="mTotal" placeholder="0"></div>
+      <div class="form-group"><label>Cantidad Operativa</label><input type="text" id="mOperativo" placeholder="0"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label>Observaciones</label><input type="text" id="mObs" placeholder="Detalles..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalMaterial')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarMaterial()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CURSO -->
+<div class="modal-overlay" id="modalCurso">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-title">🎓 Añadir / Editar Curso</div>
+    <input type="hidden" id="cId">
+    <div class="form-row full">
+      <div class="form-group"><label>Efectivo</label>
+        <select id="cPersonal"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre del Curso</label><input type="text" id="cNombre" placeholder="Ej: Curso de Combate Urbano..."></div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="cCategoria">
+          <option value="Combate">Combate</option>
+          <option value="Tiro">Tiro</option>
+          <option value="Transmisiones">Transmisiones</option>
+          <option value="Sanidad">Sanidad</option>
+          <option value="Liderazgo">Liderazgo</option>
+          <option value="Conducción">Conducción</option>
+          <option value="Idiomas">Idiomas</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Centro / Lugar</label><input type="text" id="cCentro" placeholder="Ej: ACAB, Toledo..."></div>
+      <div class="form-group"><label>Estado</label>
+        <select id="cEstado">
+          <option value="Aprobado">Aprobado</option>
+          <option value="En curso (curso)">En curso</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha Realización</label><input type="date" id="cFecha"></div>
+      <div class="form-group"><label>Fecha Caducidad (si aplica)</label><input type="date" id="cCaducidad"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label>Observaciones / Calificación</label><input type="text" id="cObs" placeholder="Apto, calificación, notas..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalCurso')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarCurso()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// ====================================================
+//  ESTADO GLOBAL
+// ====================================================
+let state = {
+  personal: [],
+  ausencias: [],
+  vehiculos: [],
+  material: [],
+  ejercicios: [],
+  cursos: [],
+  actividad: []
+};
+
+// ====================================================
+//  UTILIDADES
+// ====================================================
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function diasEntre(a, b) {
+  if (!a || !b) return 0;
+  const d1 = new Date(a), d2 = new Date(b);
+  return Math.max(0, Math.round((d2-d1)/(1000*60*60*24)) + 1);
+}
+
+function hoy() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatFecha(f) {
+  if (!f) return '—';
+  const [y,m,d] = f.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function estadoBadge(estado) {
+  const m = {
+    'Presente': 'badge-verde',
+    'Permiso oficial': 'badge-amarillo',
+    'Paternidad': 'badge-azul',
+    'Lactancia': 'badge-azul',
+    'Baja': 'badge-rojo',
+    'Rebajado': 'badge-amarillo',
+    'Guardia': 'badge-azul',
+    'Comisión': 'badge-gris',
+    'Operativo': 'badge-verde',
+    'En mantenimiento': 'badge-amarillo',
+    'Avería': 'badge-rojo',
+    'No operativo': 'badge-rojo',
+    'Planificado': 'badge-azul',
+    'En curso': 'badge-amarillo',
+    'Completado': 'badge-verde',
+    'Cancelado': 'badge-rojo',
+    'Parcial': 'badge-amarillo',
+    'Aprobado': 'badge-verde',
+    'En curso (curso)': 'badge-amarillo',
+    'Pendiente': 'badge-gris'
+  };
+  return `<span class="badge ${m[estado] || 'badge-gris'}">${estado}</span>`;
+}
+
+function log(msg) {
+  state.actividad.unshift({ fecha: hoy(), msg });
+  if (state.actividad.length > 20) state.actividad.pop();
+  fbSave();
+}
+
+// Firebase save/load handled below
+
+// ====================================================
+//  NAVEGACIÓN
+// ====================================================
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (v === 'dashboard') renderDashboard();
+  if (v === 'personal') renderPersonal();
+  if (v === 'ausencias') renderAusencias();
+  if (v === 'ejercicios') renderEjercicios();
+  if (v === 'vehiculos') renderVehiculos();
+  if (v === 'cursos') renderCursos();
+}
+
+// ====================================================
+//  MODALES
+// ====================================================
+function openModal(id) {
+  if (id === 'modalAusencia') populateAusenciaSelect();
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  resetForms();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+function resetForms() {
+  document.querySelectorAll('.modal input, .modal select').forEach(el => {
+    if (el.type === 'hidden') { el.value = ''; return; }
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+}
+
+function populateAusenciaSelect() {
+  const sel = document.getElementById('aPersonal');
+  sel.innerHTML = state.personal.map(p =>
+    `<option value="${p.id}">${p.empleo} ${p.apellidos}, ${p.nombre} (${p.seccion})</option>`
+  ).join('') || '<option value="">— Sin personal registrado —</option>';
+}
+
+// ====================================================
+//  PERSONAL
+// ====================================================
+function guardarPersonal() {
+  const id = document.getElementById('pId').value || uid();
+  const p = {
+    id,
+    nip: document.getElementById('pNip').value || '—',
+    empleo: document.getElementById('pEmpleo').value,
+    apellidos: document.getElementById('pApellidos').value,
+    nombre: document.getElementById('pNombre').value,
+    seccion: document.getElementById('pSeccion').value,
+    especialidad: document.getElementById('pEspecialidad').value,
+    estado: document.getElementById('pEstado').value,
+    obs: document.getElementById('pObs').value
+  };
+  if (!p.apellidos) { alert('Introduce al menos los apellidos.'); return; }
+  const idx = state.personal.findIndex(x => x.id === id);
+  if (idx >= 0) state.personal[idx] = p;
+  else state.personal.push(p);
+  log(`Personal: ${p.empleo} ${p.apellidos} ${idx>=0?'actualizado':'añadido'}`);
+  fbSave();
+  closeModal('modalPersonal');
+  renderPersonal();
+  updateHeader();
+}
+
+function editarPersonal(id) {
+  const p = state.personal.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('pId').value = p.id;
+  document.getElementById('pNip').value = p.nip;
+  document.getElementById('pEmpleo').value = p.empleo;
+  document.getElementById('pApellidos').value = p.apellidos;
+  document.getElementById('pNombre').value = p.nombre;
+  document.getElementById('pSeccion').value = p.seccion;
+  document.getElementById('pEspecialidad').value = p.especialidad;
+  document.getElementById('pEstado').value = p.estado;
+  document.getElementById('pObs').value = p.obs || '';
+  openModal('modalPersonal');
+}
+
+function eliminarPersonal(id) {
+  const p = state.personal.find(x => x.id === id);
+  if (!confirm(`¿Eliminar a ${p?.apellidos}?`)) return;
+  state.personal = state.personal.filter(x => x.id !== id);
+  log(`Personal eliminado: ${p?.apellidos}`);
+  fbSave(); renderPersonal(); updateHeader();
+}
+
+function renderPersonal() {
+  const q = (document.getElementById('searchPersonal')?.value || '').toLowerCase();
+  const sec = document.getElementById('filterSeccion')?.value || '';
+  const emp = document.getElementById('filterEmpleo')?.value || '';
+  const est = document.getElementById('filterEstado')?.value || '';
+
+  let data = state.personal.filter(p => {
+    const match = `${p.nip} ${p.apellidos} ${p.nombre}`.toLowerCase().includes(q);
+    return match
+      && (!sec || p.seccion === sec)
+      && (!emp || p.empleo === emp)
+      && (!est || p.estado === est);
+  });
+
+  const tbody = document.getElementById('tablaPersonal');
+  tbody.innerHTML = data.length ? data.map(p => `
+    <tr>
+      <td style="font-family:'Courier Prime',monospace;font-size:0.8rem">${p.nip}</td>
+      <td><span class="badge badge-gris">${p.empleo}</span></td>
+      <td style="font-weight:600">${p.apellidos}, ${p.nombre}</td>
+      <td>${p.seccion}</td>
+      <td style="color:var(--beis);font-size:0.8rem">${p.especialidad}</td>
+      <td>${estadoBadge(p.estado)}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="editarPersonal('${p.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarPersonal('${p.id}')">🗑</button>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="7"><div class="empty-state"><div class="icon">👥</div><p>No hay efectivos. Usa "Añadir Efectivo" para comenzar.</p></div></td></tr>`;
+
+  const cnt = document.getElementById('countPersonal');
+  if (cnt) cnt.textContent = `Mostrando ${data.length} de ${state.personal.length} efectivos`;
+}
+
+// ====================================================
+//  AUSENCIAS
+// ====================================================
+function guardarAusencia() {
+  const id = document.getElementById('aId').value || uid();
+  const pid = document.getElementById('aPersonal').value;
+  const persona = state.personal.find(p => p.id === pid);
+  if (!persona) { alert('Selecciona un efectivo.'); return; }
+
+  const inicio = document.getElementById('aInicio').value;
+  const fin = document.getElementById('aFin').value;
+
+  const a = {
+    id, pid,
+    nombre: `${persona.empleo} ${persona.apellidos}, ${persona.nombre}`,
+    seccion: persona.seccion,
+    tipo: document.getElementById('aTipo').value,
+    estadoRes: document.getElementById('aEstadoRes').value,
+    inicio, fin,
+    dias: diasEntre(inicio, fin),
+    obs: document.getElementById('aObs').value
+  };
+
+  if (!inicio) { alert('Indica la fecha de inicio.'); return; }
+
+  const idx = state.ausencias.findIndex(x => x.id === id);
+  if (idx >= 0) state.ausencias[idx] = a;
+  else state.ausencias.push(a);
+
+  // Actualizar estado del personal
+  const hoyStr = hoy();
+  if (inicio <= hoyStr && (!fin || fin >= hoyStr)) {
+    const pi = state.personal.findIndex(p => p.id === pid);
+    if (pi >= 0) state.personal[pi].estado = a.estadoRes;
+  }
+
+  log(`Ausencia: ${a.nombre} — ${a.tipo}`);
+  fbSave();
+  closeModal('modalAusencia');
+  renderAusencias();
+  updateHeader();
+}
+
+function eliminarAusencia(id) {
+  if (!confirm('¿Eliminar esta ausencia?')) return;
+  state.ausencias = state.ausencias.filter(x => x.id !== id);
+  fbSave(); renderAusencias();
+}
+
+function renderAusencias() {
+  const tipo = document.getElementById('filterTipoAus')?.value || '';
+  const sec = document.getElementById('filterSecAus')?.value || '';
+  const fecha = document.getElementById('filterFechaAus')?.value || '';
+
+  let data = state.ausencias.filter(a => {
+    const dentroPeriodo = !fecha || (a.inicio <= fecha && (!a.fin || a.fin >= fecha));
+    return (!tipo || a.tipo === tipo)
+      && (!sec || a.seccion === sec)
+      && dentroPeriodo;
+  });
+
+  // Cards resumen
+  const tipos = ['Permiso oficial','Baja','Rebajado','Guardia','Paternidad','Lactancia'];
+  const cards = document.getElementById('ausenciaCards');
+  if (cards) {
+    const hoyStr = hoy();
+    cards.innerHTML = tipos.map(t => {
+      const activas = state.ausencias.filter(a => a.tipo === t && a.inicio <= hoyStr && (!a.fin || a.fin >= hoyStr)).length;
+      const cls = activas > 5 ? 'rojo' : activas > 2 ? 'amarillo' : '';
+      return `<div class="card ${cls}"><div class="card-title">${t}</div><div class="card-value">${activas}</div><div class="card-sub">Activas hoy</div></div>`;
+    }).join('');
+  }
+
+  const tbody = document.getElementById('tablaAusencias');
+  tbody.innerHTML = data.length ? data.map(a => `
+    <tr>
+      <td style="font-weight:600">${a.nombre}</td>
+      <td>${a.seccion}</td>
+      <td>${estadoBadge(a.tipo)}</td>
+      <td style="font-family:'Courier Prime',monospace">${formatFecha(a.inicio)}</td>
+      <td style="font-family:'Courier Prime',monospace">${formatFecha(a.fin) || 'Indefinido'}</td>
+      <td style="text-align:center"><strong>${a.dias || '—'}</strong></td>
+      <td>${estadoBadge(a.estadoRes)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="eliminarAusencia('${a.id}')">🗑</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="8"><div class="empty-state"><div class="icon">📅</div><p>No hay ausencias registradas.</p></div></td></tr>`;
+}
+
+// ====================================================
+//  EJERCICIOS
+// ====================================================
+function guardarEjercicio() {
+  const e = {
+    id: uid(),
+    nombre: document.getElementById('eNombre').value || 'Sin nombre',
+    tipo: document.getElementById('eTipo').value,
+    fecha: document.getElementById('eFecha').value,
+    estado: document.getElementById('eEstado').value,
+    efectivos: []
+  };
+  state.ejercicios.push(e);
+  log(`Ejercicio registrado: ${e.nombre}`);
+  fbSave(); closeModal('modalEjercicio'); renderEjercicios();
+}
+
+function eliminarEjercicio(id) {
+  if (!confirm('¿Eliminar este ejercicio?')) return;
+  state.ejercicios = state.ejercicios.filter(x => x.id !== id);
+  fbSave(); renderEjercicios();
+}
+
+function generarListadoEjercicio() {
+  const sec = document.getElementById('ejSeccion').value;
+  const est = document.getElementById('ejEstado').value;
+  const emp = document.getElementById('ejEmpleo').value;
+
+  const empleoOrder = { TTE: 6, SGTO1: 5, SGTO: 4, CABO1: 3, CABO: 2, SOLD: 1 };
+
+  let lista = state.personal.filter(p => {
+    return (!sec || p.seccion === sec)
+      && (!est || p.estado === est)
+      && (!emp || (empleoOrder[p.empleo] || 0) >= (empleoOrder[emp] || 0));
+  });
+
+  const div = document.getElementById('ejercicioResultado');
+  if (!lista.length) {
+    div.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>No hay efectivos que cumplan los criterios seleccionados.</p></div>`;
+    return;
+  }
+
+  div.innerHTML = `
+    <div class="table-container" style="margin-bottom:24px">
+      <div class="table-toolbar">
+        <span>✅ Listado generado</span>
+        <span style="color:var(--verde-luz)">${lista.length} efectivos</span>
+        ${sec ? `<span class="badge badge-verde">${sec}</span>` : ''}
+        ${est ? `<span class="badge badge-azul">${est}</span>` : ''}
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Empleo</th><th>Apellidos, Nombre</th><th>NIP</th><th>Sección</th><th>Especialidad</th><th>Estado</th></tr></thead>
+        <tbody>
+          ${lista.map((p,i) => `
+            <tr>
+              <td style="color:var(--beis);font-family:'Courier Prime',monospace">${String(i+1).padStart(2,'0')}</td>
+              <td><span class="badge badge-gris">${p.empleo}</span></td>
+              <td style="font-weight:600">${p.apellidos}, ${p.nombre}</td>
+              <td style="font-family:'Courier Prime',monospace;font-size:0.8rem">${p.nip}</td>
+              <td>${p.seccion}</td>
+              <td style="color:var(--beis)">${p.especialidad}</td>
+              <td>${estadoBadge(p.estado)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+let _ejercicioListado = [];
+
+function exportarEjercicio() {
+  const sec = document.getElementById('ejSeccion').value;
+  const est = document.getElementById('ejEstado').value;
+  const emp = document.getElementById('ejEmpleo').value;
+  const empleoOrder = { TTE: 6, SGTO1: 5, SGTO: 4, CABO1: 3, CABO: 2, SOLD: 1 };
+  const lista = state.personal.filter(p =>
+    (!sec || p.seccion === sec) && (!est || p.estado === est)
+    && (!emp || (empleoOrder[p.empleo]||0) >= (empleoOrder[emp]||0))
+  );
+  exportCSV(lista.map((p,i) => ({
+    '#': i+1, NIP: p.nip, Empleo: p.empleo, Apellidos: p.apellidos,
+    Nombre: p.nombre, Sección: p.seccion, Especialidad: p.especialidad, Estado: p.estado
+  })), 'listado_ejercicio');
+}
+
+function renderEjercicios() {
+  const tbody = document.getElementById('tablaEjercicios');
+  tbody.innerHTML = state.ejercicios.length ? state.ejercicios.map(e => `
+    <tr>
+      <td style="font-weight:600">${e.nombre}</td>
+      <td style="font-family:'Courier Prime',monospace">${formatFecha(e.fecha)}</td>
+      <td><span class="badge badge-gris">${e.tipo}</span></td>
+      <td style="text-align:center">—</td>
+      <td>${estadoBadge(e.estado)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="eliminarEjercicio('${e.id}')">🗑</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="6"><div class="empty-state"><div class="icon">🎯</div><p>Sin ejercicios registrados.</p></div></td></tr>`;
+}
+
+// ====================================================
+//  VEHICULOS
+// ====================================================
+function guardarVehiculo() {
+  const id = document.getElementById('vId').value || uid();
+  const v = {
+    id,
+    matricula: document.getElementById('vMatricula').value || 'ET-?',
+    tipo: document.getElementById('vTipo').value,
+    seccion: document.getElementById('vSeccion').value,
+    estado: document.getElementById('vEstado').value,
+    revision: document.getElementById('vRevision').value,
+    itv: document.getElementById('vItv').value,
+    obs: document.getElementById('vObs').value
+  };
+  const idx = state.vehiculos.findIndex(x => x.id === id);
+  if (idx >= 0) state.vehiculos[idx] = v;
+  else state.vehiculos.push(v);
+  log(`Vehículo: ${v.matricula} (${v.estado})`);
+  fbSave(); closeModal('modalVehiculo'); renderVehiculos(); updateHeader();
+}
+
+function editarVehiculo(id) {
+  const v = state.vehiculos.find(x => x.id === id);
+  if (!v) return;
+  ['vId','vMatricula','vTipo','vSeccion','vEstado','vRevision','vItv','vObs'].forEach(field => {
+    const el = document.getElementById(field);
+    const key = field.replace('v','').toLowerCase();
+    const map = { id:'id', matricula:'matricula', tipo:'tipo', seccion:'seccion', estado:'estado', revision:'revision', itv:'itv', obs:'obs' };
+    if (el) el.value = v[map[key]] || '';
+  });
+  document.getElementById('vId').value = v.id;
+  document.getElementById('vMatricula').value = v.matricula;
+  document.getElementById('vTipo').value = v.tipo;
+  document.getElementById('vSeccion').value = v.seccion;
+  document.getElementById('vEstado').value = v.estado;
+  document.getElementById('vRevision').value = v.revision;
+  document.getElementById('vItv').value = v.itv;
+  document.getElementById('vObs').value = v.obs;
+  openModal('modalVehiculo');
+}
+
+function eliminarVehiculo(id) {
+  if (!confirm('¿Eliminar vehículo?')) return;
+  state.vehiculos = state.vehiculos.filter(x => x.id !== id);
+  fbSave(); renderVehiculos(); updateHeader();
+}
+
+function renderVehiculos() {
+  const ops = state.vehiculos.filter(v => v.estado === 'Operativo').length;
+  const total = state.vehiculos.length;
+  const averia = state.vehiculos.filter(v => v.estado === 'Avería' || v.estado === 'No operativo').length;
+  const mant = state.vehiculos.filter(v => v.estado === 'En mantenimiento').length;
+
+  const cards = document.getElementById('vehiculoCards');
+  cards.innerHTML = `
+    <div class="card"><div class="card-title">Total Vehículos</div><div class="card-value">${total}</div></div>
+    <div class="card"><div class="card-title">Operativos</div><div class="card-value">${ops}</div><div class="progress-bar"><div class="progress-fill" style="width:${total?ops/total*100:0}%"></div></div></div>
+    <div class="card amarillo"><div class="card-title">En Mantenimiento</div><div class="card-value">${mant}</div></div>
+    <div class="card rojo"><div class="card-title">Avería / No Oper.</div><div class="card-value">${averia}</div></div>
+  `;
+
+  const grid = document.getElementById('vehiculoGrid');
+  grid.innerHTML = state.vehiculos.length ? state.vehiculos.map(v => {
+    const itvAlert = v.itv && v.itv < hoy();
+    return `
+    <div class="vehiculo-card">
+      <div class="vehiculo-header">
+        <div class="vehiculo-id">🚗 ${v.matricula}</div>
+        ${estadoBadge(v.estado)}
+      </div>
+      <div class="vehiculo-body">
+        <div class="vehiculo-stat"><span class="k">Tipo</span><span class="v">${v.tipo}</span></div>
+        <div class="vehiculo-stat"><span class="k">Sección</span><span class="v">${v.seccion}</span></div>
+        <div class="vehiculo-stat"><span class="k">Última revisión</span><span class="v" style="font-family:'Courier Prime',monospace">${formatFecha(v.revision)}</span></div>
+        <div class="vehiculo-stat"><span class="k">ITV</span><span class="v" style="color:${itvAlert?'var(--rojo-claro)':'inherit'};font-family:'Courier Prime',monospace">${formatFecha(v.itv)}${itvAlert?' ⚠️':''}</span></div>
+        ${v.obs ? `<div style="margin-top:10px;font-size:0.78rem;color:var(--beis);font-style:italic">${v.obs}</div>` : ''}
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="editarVehiculo('${v.id}')">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarVehiculo('${v.id}')">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🚗</div><p>Sin vehículos registrados.</p></div>`;
+}
+
+// ====================================================
+//  MATERIAL
+// ====================================================
+function guardarMaterial() {
+  const id = document.getElementById('mId').value || uid();
+  const m = {
+    id,
+    nombre: document.getElementById('mNombre').value,
+    categoria: document.getElementById('mCategoria').value,
+    seccion: document.getElementById('mSeccion').value,
+    estado: document.getElementById('mEstado').value,
+    total: parseInt(document.getElementById('mTotal').value) || 0,
+    operativo: parseInt(document.getElementById('mOperativo').value) || 0,
+    obs: document.getElementById('mObs').value
+  };
+  if (!m.nombre) { alert('Introduce la denominación.'); return; }
+  const idx = state.material.findIndex(x => x.id === id);
+  if (idx >= 0) state.material[idx] = m;
+  else state.material.push(m);
+  log(`Material: ${m.nombre} añadido/actualizado`);
+  fbSave(); closeModal('modalMaterial'); renderMaterial();
+}
+
+function editarMaterial(id) {
+  const m = state.material.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('mId').value = m.id;
+  document.getElementById('mNombre').value = m.nombre;
+  document.getElementById('mCategoria').value = m.categoria;
+  document.getElementById('mSeccion').value = m.seccion;
+  document.getElementById('mEstado').value = m.estado;
+  document.getElementById('mTotal').value = m.total;
+  document.getElementById('mOperativo').value = m.operativo;
+  document.getElementById('mObs').value = m.obs || '';
+  openModal('modalMaterial');
+}
+
+function eliminarMaterial(id) {
+  if (!confirm('¿Eliminar este material?')) return;
+  state.material = state.material.filter(x => x.id !== id);
+  fbSave(); renderMaterial();
+}
+
+function renderMaterial() {
+  const cat = document.getElementById('filterCatMat')?.value || '';
+  const sec = document.getElementById('filterSecMat')?.value || '';
+  let data = state.material.filter(m => (!cat || m.categoria === cat) && (!sec || m.seccion === sec));
+
+  const tbody = document.getElementById('tablaMaterial');
+  tbody.innerHTML = data.length ? data.map(m => {
+    const pct = m.total > 0 ? Math.round(m.operativo/m.total*100) : 0;
+    const enRep = m.total - m.operativo;
+    return `
+      <tr>
+        <td style="font-weight:600">${m.nombre}</td>
+        <td><span class="badge badge-gris">${m.categoria}</span></td>
+        <td>${m.seccion}</td>
+        <td style="text-align:center;font-family:'Oswald',sans-serif;font-size:1.1rem">${m.total}</td>
+        <td style="text-align:center;color:var(--verde-luz);font-family:'Oswald',sans-serif;font-size:1.1rem">${m.operativo}</td>
+        <td style="text-align:center;color:${enRep>0?'var(--amarillo-claro)':'var(--beis)'};font-family:'Oswald',sans-serif;font-size:1.1rem">${enRep}</td>
+        <td>${estadoBadge(m.estado)}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="editarMaterial('${m.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarMaterial('${m.id}')">🗑</button>
+        </td>
+      </tr>`;
+  }).join('') : `<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>Sin material registrado.</p></div></td></tr>`;
+}
+
+// ====================================================
+//  DASHBOARD
+// ====================================================
+function renderDashboard() {
+  const hoyStr = hoy();
+
+  // Fecha
+  const fd = document.getElementById('fechaHoy');
+  if (fd) fd.textContent = new Date().toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' }).toUpperCase();
+
+  const total = state.personal.length;
+  const disponibles = state.personal.filter(p => p.estado === 'Presente').length;
+  const ausentes = total - disponibles;
+  const bajas = state.personal.filter(p => p.estado === 'Baja').length;
+  const permisos = state.personal.filter(p => p.estado === 'Permiso oficial').length;
+  const guardias = state.personal.filter(p => p.estado === 'Guardia').length;
+  const vehOp = state.vehiculos.filter(v => v.estado === 'Operativo').length;
+  const vehTotal = state.vehiculos.length;
+
+  const cards = document.getElementById('dashCards');
+  cards.innerHTML = `
+    <div class="card"><div class="card-title">Efectivos Totales</div><div class="card-value">${total}</div><div class="card-sub">En plantilla</div></div>
+    <div class="card"><div class="card-title">Presentes Hoy</div><div class="card-value">${disponibles}</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${total?disponibles/total*100:0}%"></div></div>
+    </div>
+    <div class="card ${ausentes>15?'rojo':ausentes>8?'amarillo':''}"><div class="card-title">Ausentes</div><div class="card-value">${ausentes}</div><div class="card-sub">${permisos} permiso · ${bajas} baja · ${guardias} guardia</div></div>
+    <div class="card ${vehOp<vehTotal*0.5?'rojo':vehOp<vehTotal*0.75?'amarillo':''}">
+      <div class="card-title">Vehículos Operativos</div><div class="card-value">${vehOp}/${vehTotal}</div>
+      <div class="progress-bar"><div class="progress-fill ${vehOp<vehTotal*0.5?'rojo':vehOp<vehTotal*0.75?'amarillo':''}" style="width:${vehTotal?vehOp/vehTotal*100:0}%"></div></div>
+    </div>
+  `;
+
+  // Secciones
+  const secs = ['1ª Sección','2ª Sección','Sección de Armas'];
+  const sb = document.getElementById('seccionBlocks');
+  sb.innerHTML = secs.map(s => {
+    const sp = state.personal.filter(p => p.seccion === s);
+    const sd = sp.filter(p => p.estado === 'Presente').length;
+    const pct = sp.length ? Math.round(sd/sp.length*100) : 0;
+    return `
+    <div class="seccion-block">
+      <h3>🔰 ${s}</h3>
+      <div class="seccion-stat"><span class="label">Efectivos</span><span class="value">${sp.length}</span></div>
+      <div class="seccion-stat"><span class="label">Disponibles</span><span class="value" style="color:var(--verde-luz)">${sd}</span></div>
+      <div class="seccion-stat"><span class="label">Ausentes</span><span class="value" style="color:${sp.length-sd>0?'var(--rojo-claro)':'var(--beis)'}">${sp.length-sd}</span></div>
+      <div class="seccion-stat"><span class="label">Operatividad</span><span class="value">${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill ${pct<50?'rojo':pct<75?'amarillo':''}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Alertas
+  const alertas = [];
+  state.vehiculos.filter(v => v.itv && v.itv < hoyStr).forEach(v =>
+    alertas.push({ tipo: 'rojo', msg: `ITV vencida: ${v.matricula} (${v.tipo})` })
+  );
+  state.vehiculos.filter(v => v.estado === 'Avería' || v.estado === 'No operativo').forEach(v =>
+    alertas.push({ tipo: 'rojo', msg: `Vehículo no operativo: ${v.matricula}` })
+  );
+  if (bajas > 5) alertas.push({ tipo: 'amarillo', msg: `${bajas} efectivos en baja médica` });
+  if (ausentes > total * 0.3) alertas.push({ tipo: 'amarillo', msg: `Alta tasa de ausencias: ${ausentes}/${total}` });
+
+  const ap = document.getElementById('alertasPanel');
+  const ac = document.getElementById('alertCount');
+  ac.textContent = alertas.length;
+  ap.innerHTML = alertas.length ? alertas.map(a => `
+    <div class="alert-item">
+      <div class="alert-dot dot-${a.tipo}"></div>
+      <span>${a.msg}</span>
+    </div>`).join('') : `<div class="empty-state"><div class="icon">✅</div><p>Sin alertas activas</p></div>`;
+
+  // Actividad
+  const actP = document.getElementById('actividadPanel');
+  actP.innerHTML = state.actividad.length ? state.actividad.slice(0,8).map(a => `
+    <div class="timeline-item">
+      <div class="timeline-date">${formatFecha(a.fecha)}</div>
+      <div>${a.msg}</div>
+    </div>`).join('') : `<div class="empty-state"><div class="icon">📋</div><p>Sin actividad reciente</p></div>`;
+}
+
+// ====================================================
+//  HEADER UPDATE
+// ====================================================
+function updateHeader() {
+  const total = state.personal.length;
+  const disp = state.personal.filter(p => p.estado === 'Presente').length;
+  const aus = total - disp;
+  const vop = state.vehiculos.filter(v => v.estado === 'Operativo').length;
+  document.getElementById('hTotal').textContent = total;
+  document.getElementById('hDisponibles').textContent = disp;
+  document.getElementById('hAusentes').textContent = aus;
+  document.getElementById('hVehOp').textContent = vop;
+}
+
+// ====================================================
+//  EXPORTAR CSV
+// ====================================================
+function exportCSV(data, nombre) {
+  if (!data.length) { alert('No hay datos para exportar.'); return; }
+  const headers = Object.keys(data[0]);
+  const rows = data.map(r => headers.map(h => `"${String(r[h]||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${nombre}_${hoy()}.csv`;
+  a.click();
+}
+
+function exportarListado() {
+  exportCSV(state.personal.map(p => ({
+    NIP: p.nip, Empleo: p.empleo, Apellidos: p.apellidos, Nombre: p.nombre,
+    Sección: p.seccion, Especialidad: p.especialidad, Estado: p.estado
+  })), 'listado_personal');
+}
+
+function exportarAusencias() {
+  exportCSV(state.ausencias.map(a => ({
+    Personal: a.nombre, Sección: a.seccion, Tipo: a.tipo,
+    Inicio: a.inicio, Fin: a.fin || '', Días: a.dias, Observaciones: a.obs
+  })), 'control_ausencias');
+}
+
+// ====================================================
+//  DATOS DE EJEMPLO
+// ====================================================
+function cargarEjemplos() {
+  // Solo se llama si Firebase no tiene datos
+  if (state.personal.length > 0) return;
+
+  const ejemplos = [
+    {id:uid(),nip:'12345678A',empleo:'TTE',apellidos:'Martínez García',nombre:'Carlos',seccion:'1ª Sección',especialidad:'Inf.',estado:'Presente',obs:''},
+    {id:uid(),nip:'23456789B',empleo:'SGTO1',apellidos:'López Fernández',nombre:'Ana',seccion:'1ª Sección',especialidad:'Trans.',estado:'Presente',obs:''},
+    {id:uid(),nip:'34567890C',empleo:'CABO1',apellidos:'Rodríguez Sánchez',nombre:'Pedro',seccion:'1ª Sección',especialidad:'Inf.',estado:'Permiso oficial',obs:''},
+    {id:uid(),nip:'45678901D',empleo:'SOLD',apellidos:'González Pérez',nombre:'María',seccion:'1ª Sección',especialidad:'San.',estado:'Presente',obs:''},
+    {id:uid(),nip:'56789012E',empleo:'TTE',apellidos:'Jiménez Ruiz',nombre:'Luis',seccion:'2ª Sección',especialidad:'Inf.',estado:'Presente',obs:''},
+    {id:uid(),nip:'67890123F',empleo:'SGTO',apellidos:'Moreno Torres',nombre:'Elena',seccion:'2ª Sección',especialidad:'NBC',estado:'Guardia',obs:''},
+    {id:uid(),nip:'78901234G',empleo:'CABO',apellidos:'Álvarez Romero',nombre:'Diego',seccion:'2ª Sección',especialidad:'Cond.',estado:'Baja',obs:'Baja por lesión rodilla'},
+    {id:uid(),nip:'89012345H',empleo:'SOLD',apellidos:'Navarro Gil',nombre:'Sara',seccion:'2ª Sección',especialidad:'Inf.',estado:'Presente',obs:''},
+    {id:uid(),nip:'90123456I',empleo:'TTE',apellidos:'Díaz Morales',nombre:'Roberto',seccion:'Sección de Armas',especialidad:'Inf.',estado:'Presente',obs:''},
+    {id:uid(),nip:'01234567J',empleo:'SGTO1',apellidos:'Gutiérrez Vega',nombre:'Carmen',seccion:'Sección de Armas',especialidad:'Trans.',estado:'Presente',obs:''},
+    {id:uid(),nip:'11223344K',empleo:'CABO1',apellidos:'Hernández Cruz',nombre:'Javier',seccion:'Sección de Armas',especialidad:'Inf.',estado:'Rebajado',obs:''},
+    {id:uid(),nip:'22334455L',empleo:'SOLD',apellidos:'Ramírez Lara',nombre:'Nuria',seccion:'Sección de Armas',especialidad:'Inf.',estado:'Presente',obs:''},
+  ];
+
+  state.personal = ejemplos;
+
+  state.vehiculos = [
+    {id:uid(),matricula:'ET-12345',tipo:'URO VAMTAC',seccion:'1ª Sección',estado:'Operativo',revision:'2025-11-15',itv:'2026-06-01',obs:''},
+    {id:uid(),matricula:'ET-12346',tipo:'URO VAMTAC',seccion:'2ª Sección',estado:'En mantenimiento',revision:'2025-09-20',itv:'2026-04-15',obs:'Revisión frenos'},
+    {id:uid(),matricula:'ET-12347',tipo:'LMV',seccion:'Sección de Armas',estado:'Operativo',revision:'2026-01-10',itv:'2026-09-01',obs:''},
+    {id:uid(),matricula:'ET-12348',tipo:'Camión',seccion:'Mando/Plana',estado:'Avería',revision:'2025-08-01',itv:'2025-12-01',obs:'Motor averiado — en taller'},
+  ];
+
+  state.ejercicios = [
+    {id:uid(),nombre:'Instrucción Tiro Fusil',tipo:'Tiro',fecha:'2026-03-20',estado:'Planificado',efectivos:[]},
+    {id:uid(),nombre:'Maniobras Campo',tipo:'Maniobras',fecha:'2026-04-10',estado:'Planificado',efectivos:[]},
+  ];
+
+  log('Sistema iniciado con datos de ejemplo');
+  fbSave();
+}
+
+// ====================================================
+//  CURSOS
+// ====================================================
+let cursosVista = 'tabla';
+
+function toggleCursosVista() {
+  cursosVista = cursosVista === 'tabla' ? 'persona' : 'tabla';
+  document.getElementById('cursosVistaTabla').style.display = cursosVista === 'tabla' ? 'block' : 'none';
+  document.getElementById('cursosVistaPersona').style.display = cursosVista === 'persona' ? 'block' : 'none';
+  document.getElementById('btnVistaCursos').textContent = cursosVista === 'tabla' ? '👤 Ver por persona' : '📋 Ver tabla';
+  if (cursosVista === 'persona') {
+    const sel = document.getElementById('selectPersonaCurso');
+    sel.innerHTML = '<option value="">— Selecciona un efectivo —</option>' +
+      state.personal.map(p => `<option value="${p.id}">${p.empleo} ${p.apellidos}, ${p.nombre} (${p.seccion})</option>`).join('');
+  }
+}
+
+function openModalCurso() {
+  const sel = document.getElementById('cPersonal');
+  if (sel) sel.innerHTML = state.personal.map(p =>
+    `<option value="${p.id}">${p.empleo} ${p.apellidos}, ${p.nombre} (${p.seccion})</option>`
+  ).join('') || '<option value="">Sin personal</option>';
+  openModal('modalCurso');
+}
+
+function guardarCurso() {
+  const id = document.getElementById('cId').value || uid();
+  const pid = document.getElementById('cPersonal').value;
+  const persona = state.personal.find(p => p.id === pid);
+  if (!persona) { alert('Selecciona un efectivo.'); return; }
+  const nombre = document.getElementById('cNombre').value;
+  if (!nombre) { alert('Indica el nombre del curso.'); return; }
+  const c = {
+    id, pid,
+    nombre: persona.nombre,
+    apellidos: persona.apellidos,
+    empleo: persona.empleo,
+    seccion: persona.seccion,
+    curso: nombre,
+    categoria: document.getElementById('cCategoria').value,
+    centro: document.getElementById('cCentro').value,
+    estado: document.getElementById('cEstado').value,
+    fecha: document.getElementById('cFecha').value,
+    caducidad: document.getElementById('cCaducidad').value,
+    obs: document.getElementById('cObs').value
+  };
+  const idx = state.cursos.findIndex(x => x.id === id);
+  if (idx >= 0) state.cursos[idx] = c;
+  else state.cursos.push(c);
+  log(`Curso: ${c.apellidos} — ${c.curso}`);
+  fbSave(); closeModal('modalCurso'); renderCursos();
+}
+
+function eliminarCurso(id) {
+  if (!confirm('¿Eliminar este curso?')) return;
+  state.cursos = state.cursos.filter(x => x.id !== id);
+  fbSave(); renderCursos();
+}
+
+function editarCurso(id) {
+  const c = state.cursos.find(x => x.id === id);
+  if (!c) return;
+  const sel = document.getElementById('cPersonal');
+  sel.innerHTML = state.personal.map(p =>
+    `<option value="${p.id}">${p.empleo} ${p.apellidos}, ${p.nombre} (${p.seccion})</option>`
+  ).join('');
+  document.getElementById('cId').value = c.id;
+  sel.value = c.pid;
+  document.getElementById('cNombre').value = c.curso;
+  document.getElementById('cCategoria').value = c.categoria;
+  document.getElementById('cCentro').value = c.centro || '';
+  document.getElementById('cEstado').value = c.estado;
+  document.getElementById('cFecha').value = c.fecha || '';
+  document.getElementById('cCaducidad').value = c.caducidad || '';
+  document.getElementById('cObs').value = c.obs || '';
+  openModal('modalCurso');
+}
+
+function renderCursos() {
+  const q = (document.getElementById('searchCurso')?.value || '').toLowerCase();
+  const sec = document.getElementById('filterSecCurso')?.value || '';
+  const cat = document.getElementById('filterCatCurso')?.value || '';
+  const est = document.getElementById('filterEstCurso')?.value || '';
+
+  let data = state.cursos.filter(c => {
+    const match = `${c.apellidos} ${c.nombre} ${c.curso}`.toLowerCase().includes(q);
+    return match && (!sec || c.seccion === sec) && (!cat || c.categoria === cat) && (!est || c.estado === est);
+  });
+
+  const hoyStr = hoy();
+  const tbody = document.getElementById('tablaCursos');
+  tbody.innerHTML = data.length ? data.map(c => {
+    const cadAlerta = c.caducidad && c.caducidad < hoyStr;
+    return `
+    <tr>
+      <td style="font-weight:600">${c.empleo} ${c.apellidos}, ${c.nombre}</td>
+      <td style="font-size:0.8rem">${c.seccion}</td>
+      <td style="font-weight:600;color:var(--blanco)">${c.curso}</td>
+      <td><span class="badge badge-gris">${c.categoria}</span></td>
+      <td style="font-family:'Courier Prime',monospace;font-size:0.8rem">${formatFecha(c.fecha)}</td>
+      <td style="font-size:0.8rem;color:var(--beis)">${c.centro || '—'}</td>
+      <td>${estadoBadge(c.estado)}${cadAlerta ? ' <span class="badge badge-rojo" style="font-size:0.65rem">CAD</span>' : ''}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="editarCurso('${c.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarCurso('${c.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8"><div class="empty-state"><div class="icon">🎓</div><p>No hay cursos registrados. Usa "Añadir Curso" para comenzar.</p></div></td></tr>`;
+}
+
+function renderFichaCursos() {
+  const pid = document.getElementById('selectPersonaCurso').value;
+  const div = document.getElementById('fichaCursosPersona');
+  if (!pid) { div.innerHTML = ''; return; }
+  const persona = state.personal.find(p => p.id === pid);
+  const cursos = state.cursos.filter(c => c.pid === pid);
+  const hoyStr = hoy();
+
+  div.innerHTML = `
+    <div style="background:var(--gris-oscuro);border:1px solid var(--gris-med);border-top:4px solid var(--verde-claro);padding:24px;border-radius:2px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--gris-med)">
+        <div style="width:56px;height:56px;background:var(--verde);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border:2px solid var(--verde-claro)">👤</div>
+        <div>
+          <div style="font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:700;color:var(--verde-luz)">${persona.empleo} ${persona.apellidos}, ${persona.nombre}</div>
+          <div style="font-size:0.8rem;color:var(--beis);margin-top:4px">${persona.seccion} · ${persona.especialidad} · ${estadoBadge(persona.estado)}</div>
+        </div>
+        <div style="margin-left:auto;text-align:center;background:var(--gris-med);padding:12px 20px;border-radius:2px">
+          <div style="font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--verde-luz)">${cursos.length}</div>
+          <div style="font-size:0.7rem;color:var(--beis);letter-spacing:1px;text-transform:uppercase">Cursos</div>
+        </div>
+      </div>
+      ${cursos.length ? `
+      <table style="width:100%">
+        <thead><tr>
+          <th>Curso</th><th>Categoría</th><th>Centro</th><th>Fecha</th><th>Caducidad</th><th>Estado</th><th>Obs.</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${cursos.map(c => {
+            const cadAlerta = c.caducidad && c.caducidad < hoyStr;
+            return `<tr>
+              <td style="font-weight:600">${c.curso}</td>
+              <td><span class="badge badge-gris">${c.categoria}</span></td>
+              <td style="color:var(--beis);font-size:0.8rem">${c.centro||'—'}</td>
+              <td style="font-family:'Courier Prime',monospace;font-size:0.8rem">${formatFecha(c.fecha)}</td>
+              <td style="font-family:'Courier Prime',monospace;font-size:0.8rem;color:${cadAlerta?'var(--rojo-claro)':'inherit'}">${formatFecha(c.caducidad)||'—'}${cadAlerta?' ⚠️':''}</td>
+              <td>${estadoBadge(c.estado)}</td>
+              <td style="font-size:0.78rem;color:var(--beis);font-style:italic">${c.obs||'—'}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="editarCurso('${c.id}');toggleCursosVista()">✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="eliminarCurso('${c.id}');renderFichaCursos()">🗑</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>` : `<div class="empty-state" style="padding:24px"><div class="icon" style="font-size:2rem">📚</div><p>Este efectivo no tiene cursos registrados aún.</p></div>`}
+    </div>`;
+}
+
+function exportarCursos() {
+  exportCSV(state.cursos.map(c => ({
+    Empleo: c.empleo, Apellidos: c.apellidos, Nombre: c.nombre,
+    Sección: c.seccion, Curso: c.curso, Categoría: c.categoria,
+    Centro: c.centro, Fecha: c.fecha, Caducidad: c.caducidad,
+    Estado: c.estado, Observaciones: c.obs
+  })), 'cursos_capacitaciones');
+}
+
+// ====================================================
+//  FIREBASE CONFIG & INIT
+// ====================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCNXQQOJvWDaWhKSuxzfcuFsvgbJo36shU",
+  authDomain: "gestion-compania.firebaseapp.com",
+  projectId: "gestion-compania",
+  storageBucket: "gestion-compania.firebasestorage.app",
+  messagingSenderId: "466911143568",
+  appId: "1:466911143568:web:372db5b346716cb502da15"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const DOC_REF = doc(db, "compania", "datos");
+
+// Mostrar spinner mientras carga
+function showLoader(msg) {
+  document.getElementById('loader').style.display = 'flex';
+  document.getElementById('loaderMsg').textContent = msg || 'Cargando...';
+}
+function hideLoader() {
+  document.getElementById('loader').style.display = 'none';
+}
+
+// Guardar todo el estado en Firebase
+async function fbSave() {
+  try {
+    await setDoc(DOC_REF, { data: JSON.stringify(state) });
+  } catch(e) {
+    console.error('Error guardando en Firebase:', e);
+    showToast('⚠️ Error al guardar. Comprueba la conexión.', 'error');
+  }
+}
+
+// Toast notifications
+function showToast(msg, tipo) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (tipo || '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// Escuchar cambios en tiempo real
+function startRealtimeSync() {
+  onSnapshot(DOC_REF, (snap) => {
+    if (snap.exists()) {
+      try {
+        const remote = JSON.parse(snap.data().data);
+        state = { personal:[], ausencias:[], vehiculos:[], material:[], ejercicios:[], cursos:[], actividad:[], ...remote };
+        updateHeader();
+        // Re-render vista activa
+        const active = document.querySelector('.view.active');
+        if (active) {
+          const id = active.id.replace('view-', '');
+          if (id === 'dashboard') renderDashboard();
+          else if (id === 'personal') renderPersonal();
+          else if (id === 'ausencias') renderAusencias();
+          else if (id === 'ejercicios') renderEjercicios();
+          else if (id === 'vehiculos') renderVehiculos();
+          else if (id === 'material') renderMaterial();
+          else if (id === 'cursos') renderCursos();
+        }
+      } catch(e) { console.error('Error sincronizando:', e); }
+    }
+    // Seed examples if DB is empty
+    if (state.personal.length === 0) {
+      cargarEjemplos();
+    }
+    hideLoader();
+  }, (error) => {
+    console.error('Firebase error:', error);
+    showToast('⚠️ Error de conexión con Firebase', 'error');
+    hideLoader();
+  });
+}
+
+// ARRANQUE
+showLoader('Conectando con la base de datos...');
+startRealtimeSync();
+</script>
+
+<!-- LOADER -->
+<div id="loader" style="display:flex;position:fixed;inset:0;background:rgba(10,12,8,0.95);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:48px;height:48px;border:4px solid var(--verde);border-top-color:var(--verde-luz);border-radius:50%;animation:spin 1s linear infinite"></div>
+  <div id="loaderMsg" style="font-family:'Oswald',sans-serif;letter-spacing:3px;color:var(--verde-luz);font-size:0.9rem;text-transform:uppercase">Conectando...</div>
+</div>
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--verde);color:var(--blanco);padding:12px 24px;border-radius:4px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:0.85rem;opacity:0;transition:all 0.3s;z-index:9998;pointer-events:none; }
+.toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+.toast.error { background:var(--rojo); }
+</style>
+</body>
+</html>

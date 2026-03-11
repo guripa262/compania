@@ -635,8 +635,6 @@
     animation: pulse 2s infinite;
   }
 </style>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -1374,10 +1372,69 @@ function estadoBadge(estado) {
 function log(msg) {
   state.actividad.unshift({ fecha: hoy(), msg });
   if (state.actividad.length > 20) state.actividad.pop();
-  fbSave();
+  save();
 }
 
-// Firebase save/load handled below
+// ====================================================
+//  FIREBASE REST API (sin SDK, sin módulos)
+// ====================================================
+const FB_URL = 'https://firestore.googleapis.com/v1/projects/gestion-compania/databases/(default)/documents/compania/datos';
+
+function save() {
+  const body = JSON.stringify({
+    fields: { data: { stringValue: JSON.stringify(state) } }
+  });
+  fetch(FB_URL + '?updateMask.fieldPaths=data', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: body
+  }).catch(e => console.error('Error guardando:', e));
+}
+
+async function load() {
+  try {
+    const res = await fetch(FB_URL);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.fields && json.fields.data) {
+        const parsed = JSON.parse(json.fields.data.stringValue);
+        state = Object.assign({ personal:[], ausencias:[], vehiculos:[], material:[], ejercicios:[], cursos:[], actividad:[] }, parsed);
+      }
+    }
+  } catch(e) {
+    console.warn('Firebase no disponible, usando datos locales:', e);
+    try {
+      const d = localStorage.getItem('cia_data');
+      if (d) state = JSON.parse(d);
+    } catch(e2) {}
+  }
+}
+
+// Sincronización cada 30 segundos
+setInterval(async () => {
+  try {
+    const res = await fetch(FB_URL);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.fields && json.fields.data) {
+        const parsed = JSON.parse(json.fields.data.stringValue);
+        state = Object.assign({ personal:[], ausencias:[], vehiculos:[], material:[], ejercicios:[], cursos:[], actividad:[] }, parsed);
+        updateHeader();
+        const active = document.querySelector('.view.active');
+        if (active) {
+          const id = active.id.replace('view-', '');
+          if (id === 'dashboard') renderDashboard();
+          else if (id === 'personal') renderPersonal();
+          else if (id === 'ausencias') renderAusencias();
+          else if (id === 'ejercicios') renderEjercicios();
+          else if (id === 'vehiculos') renderVehiculos();
+          else if (id === 'material') renderMaterial();
+          else if (id === 'cursos') renderCursos();
+        }
+      }
+    }
+  } catch(e) {}
+}, 30000);
 
 // ====================================================
 //  NAVEGACIÓN
@@ -1448,7 +1505,7 @@ function guardarPersonal() {
   if (idx >= 0) state.personal[idx] = p;
   else state.personal.push(p);
   log(`Personal: ${p.empleo} ${p.apellidos} ${idx>=0?'actualizado':'añadido'}`);
-  fbSave();
+  save();
   closeModal('modalPersonal');
   renderPersonal();
   updateHeader();
@@ -1474,7 +1531,7 @@ function eliminarPersonal(id) {
   if (!confirm(`¿Eliminar a ${p?.apellidos}?`)) return;
   state.personal = state.personal.filter(x => x.id !== id);
   log(`Personal eliminado: ${p?.apellidos}`);
-  fbSave(); renderPersonal(); updateHeader();
+  save(); renderPersonal(); updateHeader();
 }
 
 function renderPersonal() {
@@ -1548,7 +1605,7 @@ function guardarAusencia() {
   }
 
   log(`Ausencia: ${a.nombre} — ${a.tipo}`);
-  fbSave();
+  save();
   closeModal('modalAusencia');
   renderAusencias();
   updateHeader();
@@ -1557,7 +1614,7 @@ function guardarAusencia() {
 function eliminarAusencia(id) {
   if (!confirm('¿Eliminar esta ausencia?')) return;
   state.ausencias = state.ausencias.filter(x => x.id !== id);
-  fbSave(); renderAusencias();
+  save(); renderAusencias();
 }
 
 function renderAusencias() {
@@ -1613,13 +1670,13 @@ function guardarEjercicio() {
   };
   state.ejercicios.push(e);
   log(`Ejercicio registrado: ${e.nombre}`);
-  fbSave(); closeModal('modalEjercicio'); renderEjercicios();
+  save(); closeModal('modalEjercicio'); renderEjercicios();
 }
 
 function eliminarEjercicio(id) {
   if (!confirm('¿Eliminar este ejercicio?')) return;
   state.ejercicios = state.ejercicios.filter(x => x.id !== id);
-  fbSave(); renderEjercicios();
+  save(); renderEjercicios();
 }
 
 function generarListadoEjercicio() {
@@ -1718,7 +1775,7 @@ function guardarVehiculo() {
   if (idx >= 0) state.vehiculos[idx] = v;
   else state.vehiculos.push(v);
   log(`Vehículo: ${v.matricula} (${v.estado})`);
-  fbSave(); closeModal('modalVehiculo'); renderVehiculos(); updateHeader();
+  save(); closeModal('modalVehiculo'); renderVehiculos(); updateHeader();
 }
 
 function editarVehiculo(id) {
@@ -1744,7 +1801,7 @@ function editarVehiculo(id) {
 function eliminarVehiculo(id) {
   if (!confirm('¿Eliminar vehículo?')) return;
   state.vehiculos = state.vehiculos.filter(x => x.id !== id);
-  fbSave(); renderVehiculos(); updateHeader();
+  save(); renderVehiculos(); updateHeader();
 }
 
 function renderVehiculos() {
@@ -1805,7 +1862,7 @@ function guardarMaterial() {
   if (idx >= 0) state.material[idx] = m;
   else state.material.push(m);
   log(`Material: ${m.nombre} añadido/actualizado`);
-  fbSave(); closeModal('modalMaterial'); renderMaterial();
+  save(); closeModal('modalMaterial'); renderMaterial();
 }
 
 function editarMaterial(id) {
@@ -1825,7 +1882,7 @@ function editarMaterial(id) {
 function eliminarMaterial(id) {
   if (!confirm('¿Eliminar este material?')) return;
   state.material = state.material.filter(x => x.id !== id);
-  fbSave(); renderMaterial();
+  save(); renderMaterial();
 }
 
 function renderMaterial() {
@@ -1980,7 +2037,6 @@ function exportarAusencias() {
 //  DATOS DE EJEMPLO
 // ====================================================
 function cargarEjemplos() {
-  // Solo se llama si Firebase no tiene datos
   if (state.personal.length > 0) return;
 
   const ejemplos = [
@@ -2013,7 +2069,7 @@ function cargarEjemplos() {
   ];
 
   log('Sistema iniciado con datos de ejemplo');
-  fbSave();
+  save();
 }
 
 // ====================================================
@@ -2066,13 +2122,13 @@ function guardarCurso() {
   if (idx >= 0) state.cursos[idx] = c;
   else state.cursos.push(c);
   log(`Curso: ${c.apellidos} — ${c.curso}`);
-  fbSave(); closeModal('modalCurso'); renderCursos();
+  save(); closeModal('modalCurso'); renderCursos();
 }
 
 function eliminarCurso(id) {
   if (!confirm('¿Eliminar este curso?')) return;
   state.cursos = state.cursos.filter(x => x.id !== id);
-  fbSave(); renderCursos();
+  save(); renderCursos();
 }
 
 function editarCurso(id) {
@@ -2184,97 +2240,38 @@ function exportarCursos() {
 }
 
 // ====================================================
-//  FIREBASE CONFIG & INIT
+//  INIT
 // ====================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyCNXQQOJvWDaWhKSuxzfcuFsvgbJo36shU",
-  authDomain: "gestion-compania.firebaseapp.com",
-  projectId: "gestion-compania",
-  storageBucket: "gestion-compania.firebasestorage.app",
-  messagingSenderId: "466911143568",
-  appId: "1:466911143568:web:372db5b346716cb502da15"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const DOC_REF = db.collection("compania").doc("datos");
-
-// Mostrar spinner mientras carga
-function showLoader(msg) {
-  document.getElementById('loader').style.display = 'flex';
-  document.getElementById('loaderMsg').textContent = msg || 'Cargando...';
-}
-function hideLoader() {
-  document.getElementById('loader').style.display = 'none';
-}
-
-// Guardar todo el estado en Firebase
-function fbSave() {
-  DOC_REF.set({ data: JSON.stringify(state) }).catch(e => {
-    console.error('Error guardando en Firebase:', e);
-    showToast('⚠️ Error al guardar. Comprueba la conexión.', 'error');
-  });
-}
-
-// Toast notifications
-function showToast(msg, tipo) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + (tipo || '');
-  setTimeout(() => t.className = 'toast', 3000);
-}
-
-// Escuchar cambios en tiempo real
-function startRealtimeSync() {
-  DOC_REF.onSnapshot((snap) => {
-    if (snap.exists()) {
-      try {
-        const remote = JSON.parse(snap.data().data);
-        state = { personal:[], ausencias:[], vehiculos:[], material:[], ejercicios:[], cursos:[], actividad:[], ...remote };
-        updateHeader();
-        // Re-render vista activa
-        const active = document.querySelector('.view.active');
-        if (active) {
-          const id = active.id.replace('view-', '');
-          if (id === 'dashboard') renderDashboard();
-          else if (id === 'personal') renderPersonal();
-          else if (id === 'ausencias') renderAusencias();
-          else if (id === 'ejercicios') renderEjercicios();
-          else if (id === 'vehiculos') renderVehiculos();
-          else if (id === 'material') renderMaterial();
-          else if (id === 'cursos') renderCursos();
-        }
-      } catch(e) { console.error('Error sincronizando:', e); }
-    }
-    // Seed examples if DB is empty
-    if (state.personal.length === 0) {
-      cargarEjemplos();
-    }
-    hideLoader();
-  }, (error) => {
-    console.error('Firebase error:', error);
-    showToast('⚠️ Error de conexión con Firebase', 'error');
-    hideLoader();
-  });
-}
-
-// ARRANQUE
-showLoader('Conectando con la base de datos...');
-startRealtimeSync();
+(async () => {
+  // Mostrar pantalla de carga
+  document.getElementById('appLoader').style.display = 'flex';
+  
+  await load();
+  
+  if (state.personal.length === 0) {
+    cargarEjemplos();
+    save();
+  }
+  
+  updateHeader();
+  renderDashboard();
+  
+  // Ocultar pantalla de carga
+  document.getElementById('appLoader').style.display = 'none';
+})();
 </script>
 
-<!-- LOADER -->
-<div id="loader" style="display:flex;position:fixed;inset:0;background:rgba(10,12,8,0.95);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
-  <div style="width:48px;height:48px;border:4px solid var(--verde);border-top-color:var(--verde-luz);border-radius:50%;animation:spin 1s linear infinite"></div>
-  <div id="loaderMsg" style="font-family:'Oswald',sans-serif;letter-spacing:3px;color:var(--verde-luz);font-size:0.9rem;text-transform:uppercase">Conectando...</div>
+<!-- PANTALLA DE CARGA -->
+<div id="appLoader" style="display:flex;position:fixed;inset:0;background:rgba(10,12,8,0.97);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:20px">
+  <svg width="56" height="60" viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:pulse2 1.5s ease-in-out infinite">
+    <polygon points="24,2 27,18 44,18 30,28 35,45 24,35 13,45 18,28 4,18 21,18" fill="#d4a017" stroke="#f0c030" stroke-width="1"/>
+    <text x="24" y="31" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#0a0c08">L</text>
+  </svg>
+  <div style="font-family:'Oswald',sans-serif;letter-spacing:4px;color:#8bc34a;font-size:1rem;text-transform:uppercase">Conectando...</div>
+  <div style="font-family:'Courier Prime',monospace;font-size:0.7rem;color:#c8b89a;letter-spacing:2px">LA LEGIÓN · GESTIÓN DE COMPAÑÍA</div>
 </div>
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
 <style>
-@keyframes spin { to { transform: rotate(360deg); } }
-.toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--verde);color:var(--blanco);padding:12px 24px;border-radius:4px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:0.85rem;opacity:0;transition:all 0.3s;z-index:9998;pointer-events:none; }
-.toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
-.toast.error { background:var(--rojo); }
+@keyframes pulse2 { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.95)} }
 </style>
 </body>
 </html>
